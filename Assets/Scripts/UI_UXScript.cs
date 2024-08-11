@@ -10,13 +10,38 @@ public class UI_UXScript : MonoBehaviour
     {
         SceneManager.LoadScene("LoreScene");
     }
+    
+    public void ChangeFinal()
+    {
+        SceneManager.LoadScene("WinScene");
+    }
+    public void ChangeToContext()
+    {
+        SceneManager.LoadScene("LoreScene2");
+    }
+    public void ChangeToTutorial()
+    {
+        SceneManager.LoadScene("LoreScene3");
+    }
+    public void ChangeToCredits()
+    {
+        SceneManager.LoadScene("Credits");
+    }
     public void PlayGame()
     {
         SceneManager.LoadScene("SampleScene");
     }
+    public void PlayDepart()
+    {
+        SceneManager.LoadScene("DepartLevel");
+    }
     public void Restart()
     {
         SceneManager.LoadScene("SampleScene");
+    }
+    public void RestartDepart()
+    {
+        SceneManager.LoadScene("DepartLevel");
     }
     
     public void QuitGame()

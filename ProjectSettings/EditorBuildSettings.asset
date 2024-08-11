@@ -18,6 +18,24 @@ EditorBuildSettings:
     path: Assets/Scenes/LoseScene.unity
     guid: 81d437c811a0f8d4a9086cf6b06a740b
   - enabled: 1
+    path: Assets/Scenes/FinalScene.unity
+    guid: 74f6f5859a902cc4d800967f66486902
+  - enabled: 1
     path: Assets/Scenes/WinScene.unity
     guid: d2b950549df765b48a990b73d695364a
+  - enabled: 1
+    path: Assets/Scenes/LoreScene2.unity
+    guid: fb92385dd0eebc14ebe3989f0ecc016c
+  - enabled: 1
+    path: Assets/Scenes/LoreScene3.unity
+    guid: 552bfc6cf0aa62e43acf3c6468cc3f33
+  - enabled: 1
+    path: Assets/Scenes/Credits.unity
+    guid: 549965ad38914ff4ca3dc00ac06d6652
+  - enabled: 1
+    path: Assets/Scenes/DepartLevel.unity
+    guid: 6048701b11f84dd47b4fc0f198943a6f
+  - enabled: 1
+    path: Assets/Scenes/LoseScene2.unity
+    guid: b247af3d55b546445b6136963287b206
   m_configObjects: {}

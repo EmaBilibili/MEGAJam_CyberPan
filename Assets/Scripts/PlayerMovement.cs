@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -5,7 +6,7 @@ public class PlayerMovement : MonoBehaviour
     [Header("Movement Settings")]
     public float moveSpeed = 5f;
     public float jumpForce = 10f;
-    public float airJumpForce = 7f; // Fuerza de salto cuando el personaje está en el aire
+    public float airJumpForce = 7f;
     public float dashSpeed = 20f;
     public float dashDuration = 0.2f;
     public float groundCheckRadius = 0.2f;
@@ -14,76 +15,112 @@ public class PlayerMovement : MonoBehaviour
     public Rigidbody2D rb;
     public Transform groundCheck;
     public LayerMask groundLayer;
-    private PlayerSoundManager soundManager;
+    public Collider2D playerCollider; // Referencia al Collider del jugador
 
     private bool isGrounded;
     private bool hasAirJumped;
     private bool isDashing;
+    private bool isDroppingThrough;
     private float dashTime;
     private Vector2 moveInput;
     
+    private PlayerSoundManager soundManager;
+
+    public Animator animator; // Referencia al componente Animator
+
     void Start()
     {
+        rb = GetComponent<Rigidbody2D>();
         soundManager = GetComponent<PlayerSoundManager>();
+        animator = GetComponent<Animator>(); // Obtener la referencia del Animator
     }
 
     void Update()
+{
+    moveInput.x = Input.GetAxisRaw("Horizontal");
+
+    // Check if grounded
+    isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+
+    if (isGrounded)
     {
-        // Handle input
-        moveInput.x = Input.GetAxisRaw("Horizontal");
-        
-        // Jump
-        if (Input.GetButtonDown("Jump"))
+        hasAirJumped = false; // Reset double jump if grounded
+    }
+
+    // Set animator parameters
+    animator.SetFloat("Speed", Mathf.Abs(moveInput.x)); // Actualizar velocidad
+    animator.SetBool("IsGrounded", isGrounded);
+
+    // Jump
+    if (Input.GetButtonDown("Jump"))
+    {
+        if (isGrounded)
         {
-            if (isGrounded)
+            if (Input.GetKey(KeyCode.S)) // Detectar si está presionando "S" + "Espacio"
+            {
+                StartCoroutine(DropThroughPlatform());
+            }
+            else
             {
                 rb.velocity = new Vector2(rb.velocity.x, jumpForce);
                 soundManager.PlayJumpSound(); // Reproducir sonido de salto
-                hasAirJumped = false;
-            }
-            else if (!hasAirJumped)
-            {
-                rb.velocity = new Vector2(rb.velocity.x, airJumpForce);
-                soundManager.PlayJumpSound(true); // Reproducir sonido de salto en el aire
-                hasAirJumped = true;
+                animator.SetBool("IsJumping", true);
             }
         }
-        
-
-        // Dash
-        if (Input.GetButtonDown("Fire3") && !isDashing)
+        else if (!hasAirJumped)
         {
-            StartDash();
-            soundManager.PlayDashSound(); // Reproducir sonido de dash
+            rb.velocity = new Vector2(rb.velocity.x, airJumpForce);
+            soundManager.PlayJumpSound(); // Reproducir sonido de salto
+            hasAirJumped = true;
+            animator.SetBool("IsJumping", true);
         }
     }
 
-    void FixedUpdate()
+    // Dash
+    if (Input.GetButtonDown("Fire3") && !isDashing)
     {
-        // Check if grounded
-        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
-
-        if (isDashing)
-        {
-            rb.velocity = new Vector2(moveInput.x * dashSpeed, rb.velocity.y);
-            dashTime -= Time.fixedDeltaTime;
-            if (dashTime <= 0)
-            {
-                isDashing = false;
-            }
-        }
-        else
-        {
-            // Apply movement
-            rb.velocity = new Vector2(moveInput.x * moveSpeed, rb.velocity.y);
-        }
-        soundManager.SetGroundedState(isGrounded); // Actualizar estado del suelo para el sonido
+        StartDash();
+        soundManager.PlayDashSound(); // Reproducir sonido de dash
     }
+}
+
+void FixedUpdate()
+{
+    if (isDashing)
+    {
+        rb.velocity = new Vector2(moveInput.x * dashSpeed, rb.velocity.y);
+        dashTime -= Time.fixedDeltaTime;
+        if (dashTime <= 0)
+        {
+            isDashing = false;
+        }
+    }
+    else if (!isDroppingThrough) // Evitar movimiento mientras se cae a través de la plataforma
+    {
+        rb.velocity = new Vector2(moveInput.x * moveSpeed, rb.velocity.y);
+    }
+    soundManager.SetGroundedState(isGrounded); // Actualizar estado del suelo para el sonido
+
+    // Reset jumping animation when grounded
+    if (isGrounded && rb.velocity.y <= 0)
+    {
+        animator.SetBool("IsJumping", false);
+    }
+}
 
     void StartDash()
     {
         isDashing = true;
         dashTime = dashDuration;
+    }
+
+    IEnumerator DropThroughPlatform()
+    {
+        isDroppingThrough = true;
+        playerCollider.enabled = false; // Desactivar el collider para atravesar la plataforma
+        yield return new WaitForSeconds(0.5f); // Esperar un breve momento
+        playerCollider.enabled = true; // Reactivar el collider
+        isDroppingThrough = false;
     }
 
     void OnDrawGizmosSelected()

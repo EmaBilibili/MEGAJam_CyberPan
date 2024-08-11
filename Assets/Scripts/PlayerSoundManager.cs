@@ -9,8 +9,9 @@ public class PlayerSoundManager : MonoBehaviour
     public AudioClip walkSound;
     public AudioClip dashSound;
 
-    [Header("Audio Source")]
-    public AudioSource audioSource; // Este será el audio source principal del jugador.
+    [Header("Audio Sources")]
+    public AudioSource mainAudioSource; // Este será el audio source principal del jugador.
+    public AudioSource walkAudioSource; // Este será un audio source dedicado para el sonido de caminar.
 
     private Rigidbody2D rb;
     private bool isGrounded;
@@ -19,6 +20,13 @@ public class PlayerSoundManager : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+
+        // Configurar el AudioSource de caminar para que se reproduzca en loop
+        if (walkAudioSource != null)
+        {
+            walkAudioSource.clip = walkSound;
+            walkAudioSource.loop = true;
+        }
     }
 
     void Update()
@@ -29,12 +37,16 @@ public class PlayerSoundManager : MonoBehaviour
             if (!isWalking)
             {
                 isWalking = true;
-                PlaySound(walkSound);
+                PlayWalkSound();
             }
         }
         else
         {
-            isWalking = false;
+            if (isWalking)
+            {
+                isWalking = false;
+                StopWalkSound();
+            }
         }
     }
 
@@ -64,7 +76,23 @@ public class PlayerSoundManager : MonoBehaviour
     {
         if (clip != null)
         {
-            audioSource.PlayOneShot(clip);
+            mainAudioSource.PlayOneShot(clip);
+        }
+    }
+
+    private void PlayWalkSound()
+    {
+        if (walkAudioSource != null && !walkAudioSource.isPlaying)
+        {
+            walkAudioSource.Play();
+        }
+    }
+
+    private void StopWalkSound()
+    {
+        if (walkAudioSource != null && walkAudioSource.isPlaying)
+        {
+            walkAudioSource.Pause(); // Puedes usar Pause si planeas reanudar o Stop si prefieres que comience de nuevo.
         }
     }
 
@@ -76,6 +104,7 @@ public class PlayerSoundManager : MonoBehaviour
         if (!grounded)
         {
             isWalking = false;
+            StopWalkSound();
         }
     }
 }
